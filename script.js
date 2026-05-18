@@ -92,8 +92,8 @@ const MAPS = [
     {
         name: "الخريطة 1 - عناكب فضائية",
         levels: [
-            { target: 500,  maxLives: 3, spawnInterval: 1600, modelPrefix: "spider" },
-            { target: 750,  maxLives: 3, spawnInterval: 1400, modelPrefix: "spider" },
+            { target: 500, maxLives: 3, spawnInterval: 1600, modelPrefix: "spider" },
+            { target: 750, maxLives: 3, spawnInterval: 1400, modelPrefix: "spider" },
             { target: 1000, maxLives: 3, spawnInterval: 1200, modelPrefix: "spider" },
         ],
         story: {
@@ -162,8 +162,8 @@ const MAPS = [
         name: "الخريطة 3 - غزاة من المريخ",
         levels: [
             { target: 1500, maxLives: 3, spawnInterval: 1000, modelPrefix: "alien" },
-            { target: 1750, maxLives: 3, spawnInterval: 900,  modelPrefix: "alien" },
-            { target: 2000, maxLives: 3, spawnInterval: 800,  modelPrefix: "alien" },
+            { target: 1750, maxLives: 3, spawnInterval: 900, modelPrefix: "alien" },
+            { target: 2000, maxLives: 3, spawnInterval: 800, modelPrefix: "alien" },
         ],
         story: {
             intro: {
@@ -842,7 +842,19 @@ const camera = new THREE.PerspectiveCamera(
     0.1,
     1000
 );
-camera.position.set(0, 2, 10);
+
+// Adapt camera distance & FOV to screen size
+function applyCameraSettings() {
+    const aspect = window.innerWidth / window.innerHeight;
+    const isPortrait = aspect < 1;
+    const isNarrow = window.innerWidth < 500;
+    camera.fov = isPortrait ? 90 : isNarrow ? 82 : 75;
+    const camZ = isPortrait ? 12 : isNarrow ? 11 : 10;
+    camera.position.set(0, 2, camZ);
+    camera.aspect = aspect;
+    camera.updateProjectionMatrix();
+}
+applyCameraSettings();
 camera.lookAt(0, 0, 0);
 
 const renderer = new THREE.WebGLRenderer({
@@ -852,7 +864,8 @@ const renderer = new THREE.WebGLRenderer({
     powerPreference: "high-performance",
 });
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+// Use lower pixel ratio on mobile for performance
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2));
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.1;
 
@@ -2054,7 +2067,10 @@ class Entity {
         if (!this.mesh) return;
 
         const side = Math.random() < 0.5 ? -1 : 1;
-        this.mesh.position.set(side * (2 + Math.random() * 7), -10, 0);
+        // Scale spawn X to visible world width so entities don't spawn off-screen
+        const halfW = getSpawnHalfWidth();
+        const spawnX = side * (halfW * 0.25 + Math.random() * halfW * 0.65);
+        this.mesh.position.set(spawnX, -10, 0);
 
         const force =
             CONFIG.minThrowForce +
@@ -2076,6 +2092,13 @@ const slashCanvas = document.getElementById("slashTrail");
 const slashCtx = slashCanvas.getContext("2d");
 slashCanvas.width = window.innerWidth;
 slashCanvas.height = window.innerHeight;
+
+// Returns half the visible world width at z=0 for the current camera
+function getSpawnHalfWidth() {
+    const fovRad = (camera.fov * Math.PI) / 180;
+    const halfH = Math.tan(fovRad / 2) * Math.abs(camera.position.z);
+    return halfH * camera.aspect * 0.85;
+}
 
 let isSlashing = false;
 let slashPath = [];
@@ -2664,9 +2687,9 @@ function gameLoop(currentTime) {
 }
 
 window.addEventListener("resize", () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
+    applyCameraSettings();
     renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2));
     slashCanvas.width = window.innerWidth;
     slashCanvas.height = window.innerHeight;
 });
