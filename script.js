@@ -505,25 +505,6 @@ function backToHome() {
 }
 
 function removeAllGameListeners() {
-    const defeatVideo = document.getElementById("DEFEAT");
-    const outroVideo = document.getElementById("OUTRO");
-    const cutsceneVideo = document.getElementById("cutscene");
-
-    if (defeatVideo) {
-        const newDefeat = defeatVideo.cloneNode(true);
-        defeatVideo.parentNode.replaceChild(newDefeat, defeatVideo);
-    }
-
-    if (outroVideo) {
-        const newOutro = outroVideo.cloneNode(true);
-        outroVideo.parentNode.replaceChild(newOutro, outroVideo);
-    }
-
-    if (cutsceneVideo) {
-        const newCutscene = cutsceneVideo.cloneNode(true);
-        cutsceneVideo.parentNode.replaceChild(newCutscene, cutsceneVideo);
-    }
-
     console.log("✅ All old listeners removed");
 }
 
@@ -645,8 +626,6 @@ function restartFromBeginning() {
     document.getElementById("loseScreen").style.display = "none";
     document.getElementById("countdownScreen").style.display = "none";
 
-    muteButtonManager.removeAllMuteButtons();
-
     gameState.playerName = "";
     gameState.playerGender = "";
     gameState.currentMap = 0;
@@ -667,53 +646,9 @@ function restartFromBeginning() {
     });
     checkStartButton();
 
-    const cutsceneVideo = document.getElementById("cutscene");
+    showLoadingThenSetup();
 
-    cutsceneVideo.dataset.restartMode = "true";
-    cutsceneVideo.style.display = "block";
-    cutsceneVideo.currentTime = 0;
-    cutsceneVideo.muted = true;
-
-    muteButtonManager.createMuteButton("cutscene");
-
-    cutsceneVideo.play().catch((err) => {
-        console.error("❌ Failed to play intro video:", err);
-        muteButtonManager.removeMuteButton("cutscene");
-        cutsceneVideo.style.display = "none";
-        showLoadingThenSetup();
-    });
-
-    const videoClickHandler = (e) => {
-        if (cutsceneVideo.dataset.restartMode !== "true") return;
-
-        cutsceneVideo.pause();
-        cutsceneVideo.style.display = "none";
-        cutsceneVideo.dataset.restartMode = "false";
-        muteButtonManager.removeMuteButton("cutscene");
-
-        cutsceneVideo.removeEventListener("click", videoClickHandler);
-        cutsceneVideo.removeEventListener("ended", videoEndHandler);
-
-        showLoadingThenSetup();
-    };
-
-    const videoEndHandler = () => {
-        if (cutsceneVideo.dataset.restartMode !== "true") return;
-
-        cutsceneVideo.style.display = "none";
-        cutsceneVideo.dataset.restartMode = "false";
-        muteButtonManager.removeMuteButton("cutscene");
-
-        cutsceneVideo.removeEventListener("click", videoClickHandler);
-        cutsceneVideo.removeEventListener("ended", videoEndHandler);
-
-        showLoadingThenSetup();
-    };
-
-    cutsceneVideo.addEventListener("click", videoClickHandler);
-    cutsceneVideo.addEventListener("ended", videoEndHandler);
-
-    console.log("✅ Restart initiated - showing intro video");
+    console.log("✅ Restart initiated");
 }
 
 function showLoadingThenSetup() {
@@ -2299,25 +2234,7 @@ canvas.addEventListener("touchend", (e) => {
     endSlash();
 });
 
-function toggleGlobalMute() {
-    const activeButtons = muteButtonManager.getActiveButtons();
-    if (activeButtons.length > 0) {
-        const videoId = activeButtons[0];
-        const { button } = muteButtonManager.buttons.get(videoId);
-        if (button) button.click();
-    }
-}
-
 function handleSkip() {
-    const videos = ["cutscene", "DEFEAT", "OUTRO"];
-    for (const id of videos) {
-        const video = document.getElementById(id);
-        if (video && video.style.display !== "none" && !video.paused) {
-            video.click();
-            return;
-        }
-    }
-
     if (storyManager.active) {
         const overlay = document.getElementById("storyOverlay");
         if (overlay && overlay.style.display !== "none") {
@@ -2488,116 +2405,7 @@ function checkWinCondition() {
     }
 }
 
-class MuteButtonManager {
-    constructor() {
-        this.buttons = new Map();
-        this.activeButtons = new Set();
-    }
 
-    createMuteButton(videoId) {
-        const video = document.getElementById(videoId);
-        if (!video) {
-            console.error(`Video element with ID "${videoId}" not found`);
-            return null;
-        }
-
-        this.removeMuteButton(videoId);
-
-        const muteBtn = document.createElement("button");
-        muteBtn.id = `mute-btn-${videoId}`;
-        muteBtn.className = "video-mute-button";
-
-        let isMuted = videoId === "cutscene" ? true : false;
-        video.muted = isMuted;
-
-        muteBtn.innerHTML = isMuted
-            ? '<span class="mute-icon">🔇</span><span class="mute-text">بدون صوت</span>'
-            : '<span class="mute-icon">🔊</span><span class="mute-text">الصوت</span>';
-
-        muteBtn.style.background = isMuted
-            ? "linear-gradient(135deg, #ff6b6b, #ff8787)"
-            : "linear-gradient(135deg, #00ff88, #00ffff)";
-
-        const clickHandler = (e) => {
-            e.stopPropagation();
-            isMuted = !isMuted;
-            video.muted = isMuted;
-
-            const icon = muteBtn.querySelector(".mute-icon");
-            const text = muteBtn.querySelector(".mute-text");
-
-            if (isMuted) {
-                icon.textContent = "🔇";
-                text.textContent = "بدون صوت";
-                muteBtn.style.background =
-                    "linear-gradient(135deg, #ff6b6b, #ff8787)";
-                console.log(`🔇 ${videoId} video muted`);
-            } else {
-                icon.textContent = "🔊";
-                text.textContent = "الصوت";
-                muteBtn.style.background =
-                    "linear-gradient(135deg, #00ff88, #00ffff)";
-                console.log(`🔊 ${videoId} video unmuted`);
-            }
-        };
-
-        muteBtn.addEventListener("click", clickHandler);
-
-        muteBtn.addEventListener("mouseover", () => {
-            muteBtn.style.transform = "translateY(-3px) scale(1.08)";
-            muteBtn.style.boxShadow =
-                "0 12px 48px rgba(0, 255, 136, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 0 20px rgba(0, 255, 200, 0.8)";
-        });
-
-        muteBtn.addEventListener("mouseout", () => {
-            muteBtn.style.transform = "translateY(0) scale(1)";
-            muteBtn.style.boxShadow =
-                "0 8px 32px rgba(0, 255, 136, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3)";
-        });
-
-        document.body.appendChild(muteBtn);
-
-        this.buttons.set(videoId, {
-            button: muteBtn,
-            video: video,
-            clickHandler: clickHandler,
-        });
-
-        this.activeButtons.add(videoId);
-        console.log(`✅ Mute button created for ${videoId}`);
-
-        return muteBtn;
-    }
-
-    removeMuteButton(videoId) {
-        if (this.buttons.has(videoId)) {
-            const { button } = this.buttons.get(videoId);
-            if (button && button.parentNode) {
-                button.remove();
-            }
-            this.buttons.delete(videoId);
-            this.activeButtons.delete(videoId);
-            console.log(`❌ Mute button removed for ${videoId}`);
-        }
-    }
-
-    removeAllMuteButtons() {
-        this.activeButtons.forEach((videoId) => {
-            this.removeMuteButton(videoId);
-        });
-        console.log("✅ All mute buttons removed");
-    }
-
-    isButtonActive(videoId) {
-        return this.activeButtons.has(videoId);
-    }
-
-    getActiveButtons() {
-        return Array.from(this.activeButtons);
-    }
-}
-
-const muteButtonManager = new MuteButtonManager();
 
 function gameLose() {
     if (gameState.isGameOver) {
@@ -2614,51 +2422,16 @@ function gameLose() {
     document.getElementById("pauseMenu").style.display = "none";
     document.getElementById("winScreen").style.display = "none";
 
-    const defeatVideo = document.getElementById("DEFEAT");
-
     if (gameState.currentLevel === 2) {
         const story = MAPS[gameState.currentMap].story;
         storyManager.show(story ? story.bossLose : null, showLoseMenu);
         return;
     }
 
-    defeatVideo.style.display = "block";
-    defeatVideo.style.zIndex = "400";
-    defeatVideo.muted = false;
-    defeatVideo.currentTime = 0;
-
-    muteButtonManager.createMuteButton("DEFEAT");
-
-    defeatVideo.play().catch((err) => {
-        console.error("❌ Failed to play DEFEAT video:", err);
-        muteButtonManager.removeMuteButton("DEFEAT");
-        showLoseMenu();
-    });
-
-    const videoEndHandler = () => {
-        muteButtonManager.removeMuteButton("DEFEAT");
-        showLoseMenu();
-    };
-
-    defeatVideo.addEventListener("ended", videoEndHandler, { once: true });
-
-    const videoClickHandler = () => {
-        defeatVideo.pause();
-        defeatVideo.removeEventListener("ended", videoEndHandler);
-        defeatVideo.style.display = "none";
-        muteButtonManager.removeMuteButton("DEFEAT");
-        showLoseMenu();
-    };
-
-    defeatVideo.addEventListener("click", videoClickHandler, {
-        once: true,
-    });
+    showLoseMenu();
 }
 
 function showLoseMenu() {
-    const defeatVideo = document.getElementById("DEFEAT");
-    defeatVideo.style.display = "none";
-
     document.getElementById("loseScore").textContent = gameState.score;
     document.getElementById("loseTarget").textContent =
         gameState.targetScore;
@@ -2689,68 +2462,19 @@ function gameWin() {
         }
 
         const proceedToWin = () => {
-            if (gameState.currentMap === 2 && gameState.currentLevel === 2) {
-                playOutroVideo();
+            if (gameState.currentLevel === 2) {
+                const story = MAPS[gameState.currentMap].story;
+                storyManager.show(story ? story.bossWin : null, showWinMenu);
             } else {
                 showWinMenu();
             }
         };
 
-        if (gameState.currentLevel === 2) {
-            if (gameState.currentMap === 2) {
-                proceedToWin();
-            } else {
-                const story = MAPS[gameState.currentMap].story;
-                storyManager.show(story ? story.bossWin : null, proceedToWin);
-            }
-        } else {
-            proceedToWin();
-        }
+        proceedToWin();
     }
 }
 
-function playOutroVideo() {
-    document.getElementById("gameCanvas").style.display = "block";
-    document.getElementById("slashTrail").style.display = "none";
-    document.getElementById("ui").style.display = "none";
-    document.getElementById("pauseMenu").style.display = "none";
-    document.getElementById("loseScreen").style.display = "none";
-
-    const outroVideo = document.getElementById("OUTRO");
-    outroVideo.style.display = "block";
-    outroVideo.style.zIndex = "400";
-    outroVideo.muted = false;
-    outroVideo.currentTime = 0;
-
-    muteButtonManager.createMuteButton("OUTRO");
-
-    outroVideo.play().catch((err) => {
-        console.error("❌ Failed to play OUTRO video:", err);
-        muteButtonManager.removeMuteButton("OUTRO");
-        showWinMenu();
-    });
-
-    const videoEndHandler = () => {
-        muteButtonManager.removeMuteButton("OUTRO");
-        showWinMenu();
-    };
-
-    outroVideo.addEventListener("ended", videoEndHandler, { once: true });
-
-    const videoClickHandler = () => {
-        outroVideo.pause();
-        outroVideo.removeEventListener("ended", videoEndHandler);
-        outroVideo.style.display = "none";
-        muteButtonManager.removeMuteButton("OUTRO");
-        showWinMenu();
-    };
-
-    outroVideo.addEventListener("click", videoClickHandler, { once: true });
-}
-
 function showWinMenu() {
-    const outroVideo = document.getElementById("OUTRO");
-    outroVideo.style.display = "none";
 
     document.getElementById("winPlayerName").textContent =
         gameState.playerName;
@@ -2810,10 +2534,6 @@ function updateUI() {
     }
 }
 
-function createMuteButtonForIntro() {
-    muteButtonManager.createMuteButton("cutscene");
-}
-
 function startGameAfterVideo() {
     console.log("⏳ Loading models...");
     document.getElementById("initialLoadingScreen").style.display = "flex";
@@ -2826,53 +2546,7 @@ function startGameAfterVideo() {
 }
 
 window.addEventListener("load", () => {
-    const defeatVideo = document.getElementById("DEFEAT");
-    const outroVideo = document.getElementById("OUTRO");
-
-    if (defeatVideo) {
-        defeatVideo.style.display = "none";
-        defeatVideo.currentTime = 0;
-    }
-    if (outroVideo) {
-        outroVideo.style.display = "none";
-        outroVideo.currentTime = 0;
-    }
-
-    const cutsceneVideo = document.getElementById("cutscene");
-    const initialLoadingScreen = document.getElementById(
-        "initialLoadingScreen"
-    );
-    initialLoadingScreen.style.display = "none";
-    cutsceneVideo.style.display = "block";
-
-    createMuteButtonForIntro();
-
-    cutsceneVideo.play().catch((e) => {
-        console.warn("Video playback failed:", e);
-        muteButtonManager.removeMuteButton("cutscene");
-        cutsceneVideo.style.display = "none";
-        startGameAfterVideo();
-    });
-
-    const videoClickHandler = () => {
-        cutsceneVideo.pause();
-        cutsceneVideo.style.display = "none";
-        muteButtonManager.removeMuteButton("cutscene");
-        startGameAfterVideo();
-    };
-
-    const videoEndHandler = () => {
-        cutsceneVideo.style.display = "none";
-        muteButtonManager.removeMuteButton("cutscene");
-        startGameAfterVideo();
-    };
-
-    cutsceneVideo.addEventListener("click", videoClickHandler, {
-        once: true,
-    });
-    cutsceneVideo.addEventListener("ended", videoEndHandler, {
-        once: true,
-    });
+    startGameAfterVideo();
 });
 
 let lastTime = performance.now();
