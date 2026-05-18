@@ -92,9 +92,9 @@ const MAPS = [
     {
         name: "الخريطة 1 - عناكب فضائية",
         levels: [
-            { target: 500, maxLives: 3, spawnInterval: 1600, modelPrefix: "spider" },
-            { target: 750, maxLives: 3, spawnInterval: 1400, modelPrefix: "spider" },
-            { target: 1000, maxLives: 3, spawnInterval: 1200, modelPrefix: "spider" },
+            { target: 1000, maxLives: 3, spawnInterval: 1400, modelPrefix: "spider" },
+            { target: 1500, maxLives: 3, spawnInterval: 1300, modelPrefix: "spider" },
+            { target: 2000, maxLives: 3, spawnInterval: 1100, modelPrefix: "spider" },
         ],
         story: {
             intro: {
@@ -127,9 +127,9 @@ const MAPS = [
     {
         name: "الخريطة 2 - روبوتات قتالية",
         levels: [
-            { target: 1000, maxLives: 3, spawnInterval: 1200, modelPrefix: "robot" },
-            { target: 1250, maxLives: 3, spawnInterval: 1100, modelPrefix: "robot" },
-            { target: 1500, maxLives: 3, spawnInterval: 1000, modelPrefix: "robot" },
+            { target: 2000, maxLives: 3, spawnInterval: 1100, modelPrefix: "robot" },
+            { target: 2500, maxLives: 3, spawnInterval: 1000, modelPrefix: "robot" },
+            { target: 3000, maxLives: 3, spawnInterval: 900, modelPrefix: "robot" },
         ],
         story: {
             intro: {
@@ -161,9 +161,9 @@ const MAPS = [
     {
         name: "الخريطة 3 - غزاة من المريخ",
         levels: [
-            { target: 1500, maxLives: 3, spawnInterval: 1000, modelPrefix: "alien" },
-            { target: 1750, maxLives: 3, spawnInterval: 900, modelPrefix: "alien" },
-            { target: 2000, maxLives: 3, spawnInterval: 800, modelPrefix: "alien" },
+            { target: 3000, maxLives: 3, spawnInterval: 900, modelPrefix: "alien" },
+            { target: 3500, maxLives: 3, spawnInterval: 800, modelPrefix: "alien" },
+            { target: 4000, maxLives: 3, spawnInterval: 700, modelPrefix: "alien" },
         ],
         story: {
             intro: {
