@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fruit Chop Aliens Edition</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&family=Noto+Serif:wght@700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&family=Noto+Serif:wght@700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="fruit-chop1.css" />
+  </head>
+  <body>
+    <div id="initialLoadingScreen">
+      <h2 style="font-size: clamp(24px, 5vw, 36px); color: #00ff88">
+        🚀 جاري تحضير اللعبة...
+      </h2>
+      <div id="loadingBar">
+        <div id="loadingProgress"></div>
+      </div>
+      <p
+        id="loadingText"
+        style="margin-top: 15px; font-size: clamp(16px, 3vw, 20px)"
+      >
+        0%
+      </p>
+    </div>
+
+    <div id="playerSetupScreen">
+      <h1>🚀 Fruit Chop Aliens Edition 👾</h1>
+      <h1>ما تسمي الله يا عم</h1>
+      <div class="setup-container">
+        <div class="setup-input-group">
+          <label>اكتب اسمك:</label>
+          <input
+            type="text"
+            id="playerNameInput"
+            placeholder="أدخل اسمك"
+            maxlength="20"
+          />
+        </div>
+
+        <div class="setup-input-group">
+          <label>اختر النوع:</label>
+          <div class="gender-selection">
+            <button class="gender-button" onclick="selectGender('male', this)">
+              👨 ذكر
+            </button>
+            <button
+              class="gender-button"
+              onclick="selectGender('female', this)"
+            >
+              👩 أنثى
+            </button>
+          </div>
+        </div>
+
+        <button id="startGameButton" onclick="startGameFromSetup()" disabled>
+          ابدأ اللعبة 🎮
+        </button>
+      </div>
+
+      <div id="fullscreenHint">
+        ⌨️ اضغط <kbd>FN</kbd> + <kbd>F11</kbd> للعب بشاشة كاملة 🖥️
+      </div>
+    </div>
+
+    <div id="storyOverlay">
+      <div class="avatar-container">
+        <img id="storyAvatar" src="" alt="Character Avatar" class="avatar" />
+      </div>
+      <div class="dialogue-box">
+        <div id="storyName" class="character-name"></div>
+        <div id="storyText" class="dialogue-text"></div>
+        <div class="click-hint">اضغط للمتابعة 🖱️</div>
+      </div>
+    </div>
+    <div id="homeScreen">
+      <h1>🚀 Fruit Chop Aliens Edition 👾</h1>
+      <h1>✨نورتونا✨</h1>
+      <div id="playerInfo"></div>
+      <button
+        id="restartFromBeginningButton"
+        onclick="restartFromBeginning()"
+        style="
+          position: absolute;
+          top: 30px;
+          left: 30px;
+          padding: 10px 20px;
+          font-size: 18px;
+          background: linear-gradient(135deg, #00ff88, #00ffff);
+          border: 2px solid #00ff88;
+          color: #000;
+          border-radius: 10px;
+          cursor: pointer;
+          transition: all 0.3s;
+          font-weight: bold;
+          box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+        "
+      >
+        🔄 ابدأ من جديد
+      </button>
+      <button
+        id="resetButton"
+        onclick="resetGame()"
+        style="
+          position: absolute;
+          top: 30px;
+          right: 30px;
+          padding: 10px 20px;
+          font-size: 18px;
+          background: rgba(255, 100, 100, 0.8);
+          border: 2px solid #ff6464;
+          color: white;
+          border-radius: 10px;
+          cursor: pointer;
+          transition: all 0.3s;
+          font-weight: bold;
+        "
+      >
+        🔄 إعادة تعيين
+      </button>
+      <div class="map-selection">
+        <div class="map-card" id="map0Card" onclick="selectMap(0)">
+          <span class="lock-icon" id="map0LockIcon"></span>
+          <h3 id="map0Title">🌌 الخريطة 1</h3>
+          <p>عناكب فضائية</p>
+          <p>3 مراحل</p>
+          <div class="high-score">🏆 <span id="map0Score">0</span></div>
+        </div>
+        <div class="map-card locked" id="map1Card" onclick="selectMap(1)">
+          <span class="lock-icon" id="map1LockIcon">🔒</span>
+          <h3 id="map1Title">الخريطة 2</h3>
+          <p>روبوتات قتالية</p>
+          <p>3 مراحل</p>
+          <div class="high-score">🏆 <span id="map1Score">0</span></div>
+        </div>
+        <div class="map-card locked" id="map2Card" onclick="selectMap(2)">
+          <span class="lock-icon" id="map2LockIcon">🔒</span>
+          <h3 id="map2Title">الخريطة 3</h3>
+          <p>غزاة من المريخ</p>
+          <p>3 مراحل</p>
+          <div class="high-score">🏆 <span id="map2Score">0</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="levelScreen">
+      <h1>❤️ ما تصلي على حبيبك يا عم ❤️</h1>
+      <button class="back-button" onclick="backToHome()">← رجوع</button>
+      <h1
+        style="
+          font-size: clamp(36px, 7vw, 56px);
+          margin-bottom: clamp(20px, 4vw, 40px);
+          color: #00ff88;
+        "
+      >
+        اختر المرحلة
+      </h1>
+      <div class="level-selection">
+        <div class="level-card" id="level0Card" onclick="startLevel(0)">
+          <span class="lock-icon" id="level0LockIcon"></span>
+          <h3 id="level0Title">المرحلة 1</h3>
+          <p>سهل</p>
+          <p class="high-score" style="color: #ffff00; margin-top: 10px">
+            🏆 <span id="level0Score">0</span>
+          </p>
+        </div>
+        <div class="level-card locked" id="level1Card" onclick="startLevel(1)">
+          <span class="lock-icon" id="level1LockIcon">🔒</span>
+          <h3 id="level1Title">المرحلة 2</h3>
+          <p>متوسط</p>
+          <p class="high-score" style="color: #ffff00; margin-top: 10px">
+            🏆 <span id="level1Score">0</span>
+          </p>
+        </div>
+        <div class="level-card locked" id="level2Card" onclick="startLevel(2)">
+          <span class="lock-icon" id="level2LockIcon">🔒</span>
+          <h3 id="level2Title">المرحلة 3</h3>
+          <p>صعب - BOSS</p>
+          <p class="high-score" style="color: #ffff00; margin-top: 10px">
+            🏆 <span id="level2Score">0</span>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+    <canvas id="slashTrail"></canvas>
+
+    <div id="ui">
+      <div id="score">0</div>
+      <div id="targetScore">الهدف: 0 / 100</div>
+      <div id="combo"></div>
+      <div id="lives">⚡⚡⚡</div>
+      <button id="pauseButton" onclick="togglePause()">⏸ إيقاف</button>
+      <div id="difficultyIndicator">المستوى: 1</div>
+      <div id="fpsCounter">FPS: 60</div>
+    </div>
+
+    <div id="pauseMenu">
+      <h2>⏸ متوقف</h2>
+      <button class="menu-button" onclick="togglePause()">استكمال</button>
+      <button class="menu-button" onclick="restartGame()">إعادة المرحلة</button>
+      <button class="menu-button quit" onclick="quitToMenu()">
+        الخروج للقائمة
+      </button>
+    </div>
+
+    <div id="winScreen">
+      <h1>
+        🎉 اللهم بارك! 🎉<br />
+        ايه الحلاوة دي!
+      </h1>
+      <p class="result-text">اللاعب: <span id="winPlayerName"></span></p>
+      <p class="result-text highlight">النتيجة: <span id="winScore"></span></p>
+      <p class="result-text">أعلى كومبو: <span id="winCombo"></span></p>
+      <button class="menu-button" onclick="nextLevel()">المرحلة التالية</button>
+      <button class="menu-button" onclick="backToMapSelect()">
+        ← الرجوع للخريطة
+      </button>
+      <button class="menu-button quit" onclick="quitToMenu()">
+        القائمة الرئيسية
+      </button>
+    </div>
+
+    <div id="loseScreen">
+      <h1>
+        عيد تاني <br />
+        استعن بالله و لا تعجز
+      </h1>
+      <p class="result-text">النتيجة: <span id="loseScore"></span></p>
+      <p class="result-text">كنت محتاج: <span id="loseTarget"></span></p>
+      <button class="menu-button" onclick="restartGame()">حاول تاني</button>
+      <button class="menu-button" onclick="backToMapSelect()">
+        ← الرجوع للخريطة
+      </button>
+      <button class="menu-button quit" onclick="quitToMenu()">
+        القائمة الرئيسية
+      </button>
+    </div>
+
+    <div id="countdownScreen">
+      <h2
+        style="
+          font-size: clamp(24px, 5vw, 36px);
+          color: #00ff88;
+          margin-bottom: clamp(20px, 4vw, 30px);
+        "
+      >
+        استعد!
+      </h2>
+      <div id="countdown">3</div>
+    </div>
+
+    <video
+      id="cutscene"
+      playsinline
+      controlslist="nodownload noremoteplayback nofullscreen"
+      disablepictureinpicture
+      muted
+    >
+      <source src="فيديوهات/Intro.mp4" type="video/mp4" />
+    </video>
+    <video
+      id="DEFEAT"
+      playsinline
+      controlslist="nodownload noremoteplayback nofullscreen"
+      disablepictureinpicture
+      muted
+    >
+      <source src="فيديوهات/Defeat.mp4" type="video/mp4" />
+    </video>
+    <video
+      id="OUTRO"
+      playsinline
+      controlslist="nodownload noremoteplayback nofullscreen"
+      disablepictureinpicture
+      muted
+    >
+      <source src="فيديوهات/Outro.mp4" type="video/mp4" />
+    </video>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+      window.THREE ||
+        document.write('<script src="libraries/three.core.min.js"><\/script>');
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script>
+      if (window.THREE && !window.THREE.GLTFLoader)
+        document.write('<script src="libraries/GLTFLoader.js"><\/script>');
+    </script>
+    <script src="fruitChop1.js"></script>
+  </body>
+</html>
